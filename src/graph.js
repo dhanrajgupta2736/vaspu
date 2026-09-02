@@ -1,6 +1,6 @@
 /**
  * VASPTrace - Hardware-Accelerated Interactive Animated Graph Visualizer
- * Canvas-based multi-hop blockchain pathfinder with particle flow animation
+ * Canvas-based multi-hop blockchain pathfinder with particle flow animation & touch support
  */
 
 export class VASPTraceGraph {
@@ -23,6 +23,7 @@ export class VASPTraceGraph {
     this.isDragging = false;
     this.draggedNode = null;
     this.lastMousePos = { x: 0, y: 0 };
+    this.initialPinchDist = null;
 
     // Animation state
     this.animationProgress = 1.0;
@@ -38,13 +39,13 @@ export class VASPTraceGraph {
     if (!this.container) return;
     const rect = this.container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
-    this.canvas.style.width = `${rect.width}px`;
-    this.canvas.style.height = `${rect.height}px`;
+    this.canvas.width = Math.max(rect.width, 300) * dpr;
+    this.canvas.height = Math.max(rect.height, 300) * dpr;
+    this.canvas.style.width = `${Math.max(rect.width, 300)}px`;
+    this.canvas.style.height = `${Math.max(rect.height, 300)}px`;
     this.ctx.scale(dpr, dpr);
-    this.width = rect.width;
-    this.height = rect.height;
+    this.width = Math.max(rect.width, 300);
+    this.height = Math.max(rect.height, 300);
     this.draw();
   }
 
@@ -81,9 +82,9 @@ export class VASPTraceGraph {
     const graphCenterX = (minX + maxX) / 2;
     const graphCenterY = (minY + maxY) / 2;
 
-    const availableWidth = this.width - 120;
-    const availableHeight = this.height - 120;
-    const fitScale = Math.min(1.2, Math.max(0.6, Math.min(availableWidth / (graphWidth + 100), availableHeight / (graphHeight + 100))));
+    const availableWidth = this.width - 60;
+    const availableHeight = this.height - 60;
+    const fitScale = Math.min(1.2, Math.max(0.4, Math.min(availableWidth / (graphWidth + 80), availableHeight / (graphHeight + 80))));
 
     this.scale = fitScale;
     this.offsetX = (this.width / 2) - (graphCenterX * this.scale);
@@ -134,10 +135,10 @@ export class VASPTraceGraph {
   }
 
   getEdgeColor(edge, fromNode, toNode) {
-    if (toNode.type === 'mixer') return '#EF4444'; // Red
-    if (toNode.type === 'bridge') return '#F59E0B'; // Amber
-    if (toNode.type === 'vasp') return '#10B981';   // Emerald Green
-    return '#06B6D4'; // Cyan
+    if (toNode.type === 'mixer') return '#EF4444';
+    if (toNode.type === 'bridge') return '#F59E0B';
+    if (toNode.type === 'vasp') return '#10B981';
+    return '#06B6D4';
   }
 
   screenToWorld(x, y) {
@@ -148,60 +149,19 @@ export class VASPTraceGraph {
   }
 
   initEvents() {
+    // Mouse Events
     this.canvas.addEventListener('mousedown', (e) => {
       const rect = this.canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-      const worldPos = this.screenToWorld(mouseX, mouseY);
-
-      const clickedNode = this.nodes.slice().reverse().find(n => {
-        const dx = n.x - worldPos.x;
-        const dy = n.y - worldPos.y;
-        return Math.sqrt(dx * dx + dy * dy) <= (n.radius || 28);
-      });
-
-      if (clickedNode) {
-        this.draggedNode = clickedNode;
-        this.selectedNode = clickedNode;
-        if (this.callbacks.onNodeSelected) {
-          this.callbacks.onNodeSelected(clickedNode);
-        }
-      } else {
-        this.isDragging = true;
-        this.selectedNode = null;
-        if (this.callbacks.onNodeSelected) {
-          this.callbacks.onNodeSelected(null);
-        }
-      }
-      this.lastMousePos = { x: mouseX, y: mouseY };
+      this.handlePointerDown(mouseX, mouseY);
     });
 
     window.addEventListener('mousemove', (e) => {
       const rect = this.canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-      const worldPos = this.screenToWorld(mouseX, mouseY);
-
-      if (this.draggedNode) {
-        this.draggedNode.x = worldPos.x;
-        this.draggedNode.y = worldPos.y;
-      } else if (this.isDragging) {
-        const dx = mouseX - this.lastMousePos.x;
-        const dy = mouseY - this.lastMousePos.y;
-        this.offsetX += dx;
-        this.offsetY += dy;
-      } else {
-        const hovered = this.nodes.find(n => {
-          const dx = n.x - worldPos.x;
-          const dy = n.y - worldPos.y;
-          return Math.sqrt(dx * dx + dy * dy) <= (n.radius || 28);
-        });
-        if (this.hoveredNode !== hovered) {
-          this.hoveredNode = hovered;
-          this.canvas.style.cursor = hovered ? 'pointer' : 'grab';
-        }
-      }
-      this.lastMousePos = { x: mouseX, y: mouseY };
+      this.handlePointerMove(mouseX, mouseY);
     });
 
     window.addEventListener('mouseup', () => {
@@ -209,6 +169,44 @@ export class VASPTraceGraph {
       this.draggedNode = null;
     });
 
+    // Touch Events (Mobile/Tablet Support)
+    this.canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        const rect = this.canvas.getBoundingClientRect();
+        const touchX = e.touches[0].clientX - rect.left;
+        const touchY = e.touches[0].clientY - rect.top;
+        this.handlePointerDown(touchX, touchY);
+      } else if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        this.initialPinchDist = Math.sqrt(dx * dx + dy * dy);
+      }
+    }, { passive: false });
+
+    this.canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const rect = this.canvas.getBoundingClientRect();
+      if (e.touches.length === 1) {
+        const touchX = e.touches[0].clientX - rect.left;
+        const touchY = e.touches[0].clientY - rect.top;
+        this.handlePointerMove(touchX, touchY);
+      } else if (e.touches.length === 2 && this.initialPinchDist) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const zoomRatio = dist / this.initialPinchDist;
+        this.scale = Math.min(2.5, Math.max(0.3, this.scale * (zoomRatio > 1 ? 1.03 : 0.97)));
+        this.initialPinchDist = dist;
+      }
+    }, { passive: false });
+
+    this.canvas.addEventListener('touchend', () => {
+      this.isDragging = false;
+      this.draggedNode = null;
+      this.initialPinchDist = null;
+    });
+
+    // Mouse Wheel Zoom
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const rect = this.canvas.getBoundingClientRect();
@@ -222,6 +220,55 @@ export class VASPTraceGraph {
       this.offsetY = mouseY - (mouseY - this.offsetY) * (newScale / this.scale);
       this.scale = newScale;
     });
+  }
+
+  handlePointerDown(x, y) {
+    const worldPos = this.screenToWorld(x, y);
+    const clickedNode = this.nodes.slice().reverse().find(n => {
+      const dx = n.x - worldPos.x;
+      const dy = n.y - worldPos.y;
+      return Math.sqrt(dx * dx + dy * dy) <= (n.radius || 28);
+    });
+
+    if (clickedNode) {
+      this.draggedNode = clickedNode;
+      this.selectedNode = clickedNode;
+      if (this.callbacks.onNodeSelected) {
+        this.callbacks.onNodeSelected(clickedNode);
+      }
+    } else {
+      this.isDragging = true;
+      this.selectedNode = null;
+      if (this.callbacks.onNodeSelected) {
+        this.callbacks.onNodeSelected(null);
+      }
+    }
+    this.lastMousePos = { x, y };
+  }
+
+  handlePointerMove(x, y) {
+    const worldPos = this.screenToWorld(x, y);
+
+    if (this.draggedNode) {
+      this.draggedNode.x = worldPos.x;
+      this.draggedNode.y = worldPos.y;
+    } else if (this.isDragging) {
+      const dx = x - this.lastMousePos.x;
+      const dy = y - this.lastMousePos.y;
+      this.offsetX += dx;
+      this.offsetY += dy;
+    } else {
+      const hovered = this.nodes.find(n => {
+        const dx = n.x - worldPos.x;
+        const dy = n.y - worldPos.y;
+        return Math.sqrt(dx * dx + dy * dy) <= (n.radius || 28);
+      });
+      if (this.hoveredNode !== hovered) {
+        this.hoveredNode = hovered;
+        this.canvas.style.cursor = hovered ? 'pointer' : 'grab';
+      }
+    }
+    this.lastMousePos = { x, y };
   }
 
   startLoop() {

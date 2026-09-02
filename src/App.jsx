@@ -13,6 +13,7 @@ export default function App() {
   const [customChain, setCustomChain] = useState('tron');
   const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
   const [noticeData, setNoticeData] = useState(null);
+  const [mobileTab, setMobileTab] = useState('graph'); // 'graph' | 'cases' | 'intel'
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -37,12 +38,29 @@ export default function App() {
       graphInstanceRef.current.setData(VASP_DATA.scenarios.scenario1, true);
     }
 
+    const handleResize = () => {
+      if (graphInstanceRef.current) {
+        graphInstanceRef.current.resize();
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
     return () => {
+      window.removeEventListener('resize', handleResize);
       if (graphInstanceRef.current) {
         graphInstanceRef.current.destroy();
       }
     };
   }, []);
+
+  // Resize graph on mobile tab switch
+  useEffect(() => {
+    if (mobileTab === 'graph' && graphInstanceRef.current) {
+      setTimeout(() => {
+        graphInstanceRef.current.resize();
+      }, 50);
+    }
+  }, [mobileTab]);
 
   // Handle Scenario Switch
   const handleSelectScenario = (key) => {
@@ -53,6 +71,8 @@ export default function App() {
     if (graphInstanceRef.current) {
       graphInstanceRef.current.setData(sc, true);
     }
+    // Switch to graph view automatically on mobile when scenario clicked
+    setMobileTab('graph');
   };
 
   // Timeline Slider Change
@@ -81,15 +101,15 @@ export default function App() {
   const cb = currentScenario.confidenceBreakdown;
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="app-root">
       
       {/* ================= TOP COMMAND BAR ================= */}
       <header className="top-command-bar">
         <div className="brand-section">
           <div className="brand-icon-shield">🛡️</div>
           <div className="brand-text">
-            <h1>VASP<span>Trace</span> <small style={{ fontSize: '10px', fontWeight: 'normal', color: '#94A3B8' }}>| SIH 2026 PS26183</small></h1>
-            <p>Real-Time Crypto Fraud Attribution & Sovereign SAHYOG Legal Dispatch</p>
+            <h1>VASP<span>Trace</span> <small className="hide-mobile" style={{ fontSize: '10px', fontWeight: 'normal', color: '#94A3B8' }}>| SIH 2026 PS26183</small></h1>
+            <p className="hide-mobile">Real-Time Crypto Fraud Attribution & Sovereign SAHYOG Legal Dispatch</p>
           </div>
         </div>
 
@@ -97,19 +117,19 @@ export default function App() {
         <div className="threat-ticker-container">
           <div className="pulse-dot"></div>
           <div className="ticker-stat">
-            <span>2025 CYBER LOSS:</span>
+            <span>2025 LOSS:</span>
             <strong style={{ color: '#F59E0B' }}>₹22,495 Cr</strong>
           </div>
-          <div className="ticker-stat">
-            <span>REPORTED CASES:</span>
-            <strong>28.15 Lakh</strong>
+          <div className="ticker-stat hide-mobile">
+            <span>CASES:</span>
+            <strong>28.15 L</strong>
           </div>
-          <div className="ticker-stat">
-            <span>INVESTMENT FRAUDS:</span>
+          <div className="ticker-stat hide-mobile">
+            <span>INVESTMENT:</span>
             <strong style={{ color: '#06B6D4' }}>75.4%</strong>
           </div>
           <div className="ticker-stat">
-            <span>AVG TRACE TIME:</span>
+            <span>LATENCY:</span>
             <strong style={{ color: '#10B981' }}>&lt; 3.8s</strong>
           </div>
         </div>
@@ -117,16 +137,39 @@ export default function App() {
         {/* Action Button */}
         <div className="nav-actions">
           <button onClick={handleOpenNotice} className="btn-primary">
-            📜 Generate SAHYOG Notice (Sec 94 BNSS)
+            <span className="hide-mobile">📜 Generate SAHYOG Notice (Sec 94 BNSS)</span>
+            <span className="show-mobile-only">📜 SAHYOG Notice</span>
           </button>
         </div>
       </header>
+
+      {/* ================= MOBILE NAVIGATION SEGMENTED TABS ================= */}
+      <nav className="mobile-tab-bar show-mobile-flex">
+        <button
+          onClick={() => setMobileTab('cases')}
+          className={`mobile-tab-btn ${mobileTab === 'cases' ? 'active' : ''}`}
+        >
+          📂 Cases (4)
+        </button>
+        <button
+          onClick={() => setMobileTab('graph')}
+          className={`mobile-tab-btn ${mobileTab === 'graph' ? 'active' : ''}`}
+        >
+          🕸️ Graph Canvas
+        </button>
+        <button
+          onClick={() => setMobileTab('intel')}
+          className={`mobile-tab-btn ${mobileTab === 'intel' ? 'active' : ''}`}
+        >
+          🛡️ VASP Intel
+        </button>
+      </nav>
 
       {/* ================= MAIN 3-COLUMN WORKSPACE ================= */}
       <main className="main-workspace">
         
         {/* LEFT PANEL: Ingestion & Scenarios */}
-        <aside className="left-panel">
+        <aside className={`left-panel ${mobileTab === 'cases' ? 'mobile-active' : ''}`}>
           <div>
             <div className="panel-section-title">
               <span>SHOWCASE SCENARIOS (JUDGE DEMOS)</span>
@@ -185,7 +228,7 @@ export default function App() {
           </div>
 
           {/* Live NCRP Feed */}
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, paddingBottom: '20px' }}>
             <div className="panel-section-title">
               <span>LIVE NCRP 1930 COMPLAINT STREAM</span>
               <span className="badge-tag emerald" style={{ fontSize: '7.5px' }}>STREAMING</span>
@@ -218,7 +261,7 @@ export default function App() {
         </aside>
 
         {/* CENTER PANEL: Graph Canvas */}
-        <section className="center-panel">
+        <section className={`center-panel ${mobileTab === 'graph' ? 'mobile-active' : ''}`}>
           <div ref={containerRef} className="graph-canvas-container">
             <canvas ref={canvasRef} id="vaspGraphCanvas" />
 
@@ -226,7 +269,7 @@ export default function App() {
             <div className="canvas-hud-top">
               <div className="case-active-banner">
                 <div>
-                  <strong>{currentScenario.name}</strong>
+                  <strong className="case-title-text">{currentScenario.name}</strong>
                   <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
                     {currentScenario.chain} · {currentScenario.stolenAmount}
                   </div>
@@ -244,10 +287,10 @@ export default function App() {
             {/* Bottom Timeline Control */}
             <div className="canvas-timeline-bottom">
               <div className="timeline-info">
-                <strong>Hop {timelineHop} of {maxHop}</strong>
+                <strong>Hop {timelineHop}/{maxHop}</strong>
               </div>
               <div className="timeline-slider-bar">
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Hop 1</span>
+                <span className="hide-mobile" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Hop 1</span>
                 <input
                   type="range"
                   min="1"
@@ -255,17 +298,17 @@ export default function App() {
                   value={timelineHop}
                   onChange={handleTimelineChange}
                 />
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Hop {maxHop}</span>
+                <span className="hide-mobile" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Hop {maxHop}</span>
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--cyan-primary)', fontFamily: 'var(--font-mono)' }}>
-                LIVE FUND-FLOW STREAM
+              <div className="hide-mobile" style={{ fontSize: '10px', color: 'var(--cyan-primary)', fontFamily: 'var(--font-mono)' }}>
+                LIVE STREAM
               </div>
             </div>
           </div>
         </section>
 
         {/* RIGHT PANEL: Intelligence & Confidence Engine */}
-        <aside className="right-panel">
+        <aside className={`right-panel ${mobileTab === 'intel' ? 'mobile-active' : ''}`}>
           
           {/* Target Attribution Hero Card */}
           <div className={`attribution-hero-card ${currentScenario.confidenceScore < 40 ? 'degraded' : ''}`}>
@@ -367,7 +410,7 @@ export default function App() {
           </div>
 
           {/* Hop-by-Hop Breadcrumb Ledger */}
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, paddingBottom: '20px' }}>
             <div className="panel-section-title">
               <span>TRANSACTION BREADCRUMB LEDGER</span>
               <span style={{ fontSize: '8px', color: 'var(--text-muted)' }}>EVIDENCE TRAIL</span>
@@ -399,7 +442,7 @@ export default function App() {
         <div className="modal-overlay open">
           <div className="modal-container">
             <div className="modal-header">
-              <h3>📜 Formal Legal Freeze Directive · SAHYOG / Section 94 BNSS</h3>
+              <h3>📜 Formal Legal Freeze Directive · SAHYOG</h3>
               <button onClick={() => setIsNoticeModalOpen(false)} className="btn-icon" style={{ fontSize: '18px' }}>✖</button>
             </div>
             <div className="modal-body">
