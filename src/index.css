@@ -81,7 +81,7 @@ body {
    TOP COMMAND NAV BAR
    ========================================================================== */
 .top-command-bar {
-  min-height: 58px;
+  min-height: 56px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
@@ -99,29 +99,37 @@ body {
   gap: 10px;
 }
 
-.brand-icon-shield {
-  width: 34px;
-  height: 34px;
-  background: linear-gradient(135deg, #0284C7, #06B6D4);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 0 14px var(--cyan-glow);
-  flex-shrink: 0;
+.brand-icon-wrapper {
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+.brand-icon-wrapper:hover {
+  transform: scale(1.08) rotate(-3deg);
 }
 
 .brand-text h1 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.5px;
   color: #FFFFFF;
   line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .brand-text h1 span {
   color: var(--cyan-primary);
+}
+
+.badge-sih {
+  font-size: 9px;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #38BDF8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
 }
 
 .brand-text p {
@@ -214,10 +222,67 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-secondary:hover {
   background: rgba(51, 65, 85, 0.8);
+  border-color: var(--cyan-primary);
+}
+
+/* ==========================================================================
+   BLOCKCHAIN LIVE NODE TELEMETRY STRIP
+   ========================================================================== */
+.blockchain-telemetry-strip {
+  background: #060A13;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+  padding: 4px 16px;
+  font-size: 9.5px;
+  z-index: 45;
+  flex-shrink: 0;
+}
+
+.telemetry-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow-x: auto;
+}
+
+.telemetry-label {
+  color: var(--cyan-primary);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.telemetry-node-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.node-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--emerald-success);
+  border-radius: 50%;
+}
+
+.node-name {
+  color: #CBD5E1;
+}
+
+.node-block {
+  color: #38BDF8;
+  font-family: var(--font-mono);
+}
+
+.node-ping {
+  color: var(--text-muted);
+  font-size: 8.5px;
 }
 
 /* ==========================================================================
@@ -261,7 +326,7 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: 310px 1fr 340px;
-  height: calc(100vh - 58px);
+  height: calc(100vh - 84px);
   overflow: hidden;
 }
 
@@ -637,6 +702,38 @@ body {
 
 .breakdown-row:last-child {
   border-bottom: none;
+}
+
+/* Copy and Explorer Link Utilities */
+.btn-copy {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid var(--border-subtle);
+  color: var(--cyan-primary);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-copy:hover {
+  background: var(--cyan-primary);
+  color: #000000;
+}
+
+.explorer-link {
+  display: inline-block;
+  color: #38BDF8;
+  font-size: 9.5px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.explorer-link:hover {
+  color: #7DD3FC;
+  text-decoration: underline;
 }
 
 /* Hop Breadcrumb Ledger */

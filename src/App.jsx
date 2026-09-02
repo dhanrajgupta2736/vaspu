@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { VASP_DATA } from './data';
 import { VASPTraceGraph } from './graph';
 import { SAHYOGNoticeEngine } from './notice-engine';
+import { VaspLogo } from './components/VaspLogo';
 
 export default function App() {
   const [currentScenarioKey, setCurrentScenarioKey] = useState('scenario1');
@@ -14,6 +15,8 @@ export default function App() {
   const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
   const [noticeData, setNoticeData] = useState(null);
   const [mobileTab, setMobileTab] = useState('graph'); // 'graph' | 'cases' | 'intel'
+  const [copiedKey, setCopiedKey] = useState(null);
+  const [particleSpeed, setParticleSpeed] = useState('normal'); // 'slow' | 'normal' | 'fast'
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -71,7 +74,6 @@ export default function App() {
     if (graphInstanceRef.current) {
       graphInstanceRef.current.setData(sc, true);
     }
-    // Switch to graph view automatically on mobile when scenario clicked
     setMobileTab('graph');
   };
 
@@ -92,10 +94,54 @@ export default function App() {
     setIsNoticeModalOpen(true);
   };
 
+  // Export Forensic JSON Dossier
+  const handleExportJSON = () => {
+    const exportData = {
+      caseTitle: currentScenario.name,
+      incidentId: currentScenario.id,
+      crimeType: currentScenario.crimeType,
+      victimInfo: currentScenario.victimInfo,
+      stolenAmount: currentScenario.stolenAmount,
+      blockchain: currentScenario.chain,
+      destinationVASP: currentScenario.attributionResult,
+      confidenceScore: `${currentScenario.confidenceScore}% (${currentScenario.confidenceTier})`,
+      mlAnomalyScore: currentScenario.mlAnomalyScore,
+      evidenceTrail: currentScenario.edges,
+      walletNodes: currentScenario.nodes,
+      exportedAt: new Date().toISOString(),
+      statutoryCertificate: "Section 63 BSA, 2023 Tamper-Evident Digest"
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `VASPTrace_Forensic_${currentScenario.id}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleCopy = (text, key) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
   const handleCustomTrace = (e) => {
     e.preventDefault();
     if (!customAddress.trim()) return;
     handleSelectScenario('scenario1');
+  };
+
+  const toggleParticleSpeed = () => {
+    const nextSpeed = particleSpeed === 'normal' ? 'fast' : (particleSpeed === 'fast' ? 'slow' : 'normal');
+    setParticleSpeed(nextSpeed);
+    if (graphInstanceRef.current) {
+      const multiplier = nextSpeed === 'fast' ? 2.0 : (nextSpeed === 'slow' ? 0.5 : 1.0);
+      graphInstanceRef.current.particles.forEach(p => {
+        p.speed = (0.008 + Math.random() * 0.004) * multiplier;
+      });
+    }
   };
 
   const cb = currentScenario.confidenceBreakdown;
@@ -106,10 +152,12 @@ export default function App() {
       {/* ================= TOP COMMAND BAR ================= */}
       <header className="top-command-bar">
         <div className="brand-section">
-          <div className="brand-icon-shield">🛡️</div>
+          <div className="brand-icon-wrapper">
+            <VaspLogo size={36} />
+          </div>
           <div className="brand-text">
-            <h1>VASP<span>Trace</span> <small className="hide-mobile" style={{ fontSize: '10px', fontWeight: 'normal', color: '#94A3B8' }}>| SIH 2026 PS26183</small></h1>
-            <p className="hide-mobile">Real-Time Crypto Fraud Attribution & Sovereign SAHYOG Legal Dispatch</p>
+            <h1>VASP<span>Trace</span> <small className="hide-mobile badge-sih">SIH 2026 PS26183</small></h1>
+            <p className="hide-mobile">Real-Time Crypto Fraud Attribution & Sovereign SAHYOG Legal Intelligence</p>
           </div>
         </div>
 
@@ -134,14 +182,32 @@ export default function App() {
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* Action Buttons */}
         <div className="nav-actions">
+          <button onClick={handleExportJSON} className="btn-secondary hide-mobile" title="Export Forensic Dossier">
+            📥 Export JSON
+          </button>
           <button onClick={handleOpenNotice} className="btn-primary">
             <span className="hide-mobile">📜 Generate SAHYOG Notice (Sec 94 BNSS)</span>
-            <span className="show-mobile-only">📜 SAHYOG Notice</span>
+            <span className="show-mobile-only">📜 Notice</span>
           </button>
         </div>
       </header>
+
+      {/* ================= BLOCKCHAIN LIVE NODE TELEMETRY STRIP ================= */}
+      <div className="blockchain-telemetry-strip hide-mobile">
+        <div className="telemetry-inner">
+          <span className="telemetry-label">📡 LIVE ARCHIVE NODES:</span>
+          {VASP_DATA.blockchainNodes.map((node, idx) => (
+            <div key={idx} className="telemetry-node-item">
+              <span className="node-dot"></span>
+              <span className="node-name">{node.name}:</span>
+              <strong className="node-block">{node.block}</strong>
+              <span className="node-ping">({node.latency})</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ================= MOBILE NAVIGATION SEGMENTED TABS ================= */}
       <nav className="mobile-tab-bar show-mobile-flex">
@@ -277,10 +343,11 @@ export default function App() {
               </div>
 
               <div className="canvas-controls-box">
-                <button onClick={() => graphInstanceRef.current?.animateHopExpansion()} className="btn-icon" title="Replay Trace">▶️</button>
+                <button onClick={() => graphInstanceRef.current?.animateHopExpansion()} className="btn-icon" title="Replay Trace Animation">▶️</button>
+                <button onClick={toggleParticleSpeed} className="btn-icon" title={`Speed: ${particleSpeed}`}>⚡</button>
                 <button onClick={() => graphInstanceRef.current?.zoomIn()} className="btn-icon" title="Zoom In">➕</button>
                 <button onClick={() => graphInstanceRef.current?.zoomOut()} className="btn-icon" title="Zoom Out">➖</button>
-                <button onClick={() => graphInstanceRef.current?.resetView()} className="btn-icon" title="Reset View">🎯</button>
+                <button onClick={() => graphInstanceRef.current?.resetView()} className="btn-icon" title="Re-Center Graph">🎯</button>
               </div>
             </div>
 
@@ -301,7 +368,7 @@ export default function App() {
                 <span className="hide-mobile" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Hop {maxHop}</span>
               </div>
               <div className="hide-mobile" style={{ fontSize: '10px', color: 'var(--cyan-primary)', fontFamily: 'var(--font-mono)' }}>
-                LIVE STREAM
+                STREAM: {particleSpeed.toUpperCase()}
               </div>
             </div>
           </div>
@@ -384,17 +451,46 @@ export default function App() {
             </div>
             {selectedNode ? (
               <div>
-                <div style={{ fontWeight: 700, fontSize: '12px', color: '#FFFFFF', display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ fontWeight: 700, fontSize: '12px', color: '#FFFFFF', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>{selectedNode.label}</span>
-                  <span style={{ color: 'var(--cyan-primary)' }}>{selectedNode.type.toUpperCase()}</span>
+                  <span style={{ color: 'var(--cyan-primary)', fontSize: '10px' }}>{selectedNode.type.toUpperCase()}</span>
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9.5px', color: '#94A3B8', margin: '4px 0', wordBreak: 'break-all' }}>
-                  {selectedNode.address}
+                
+                {/* Address and Copy Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '6px 0' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#94A3B8', wordBreak: 'break-all', flex: 1 }}>
+                    {selectedNode.address}
+                  </span>
+                  <button
+                    onClick={() => handleCopy(selectedNode.address, `addr-${selectedNode.id}`)}
+                    className="btn-copy"
+                    title="Copy Address"
+                  >
+                    {copiedKey === `addr-${selectedNode.id}` ? '✓' : '📋'}
+                  </button>
                 </div>
-                <div style={{ fontSize: '11px', margin: '4px 0' }}>
-                  <strong>Balance:</strong> <span style={{ color: '#10B981' }}>{selectedNode.balance || '0'}</span>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '10.5px', margin: '6px 0', background: 'rgba(15,23,42,0.6)', padding: '6px', borderRadius: '4px' }}>
+                  <div><strong>Balance:</strong> <span style={{ color: '#10B981' }}>{selectedNode.balance || '0'}</span></div>
+                  <div><strong>TX Count:</strong> <span style={{ color: '#60A5FA' }}>{selectedNode.txCount || 'N/A'}</span></div>
+                  <div><strong>First Seen:</strong> <span style={{ color: '#94A3B8' }}>{selectedNode.firstSeen || 'N/A'}</span></div>
+                  <div><strong>Last Active:</strong> <span style={{ color: '#94A3B8' }}>{selectedNode.lastSeen || 'N/A'}</span></div>
                 </div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+
+                {selectedNode.explorerUrl && (
+                  <div style={{ marginTop: '6px' }}>
+                    <a
+                      href={selectedNode.explorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="explorer-link"
+                    >
+                      🔗 View on Blockchain Explorer ↗
+                    </a>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
                   {(selectedNode.tags || []).map((t, idx) => (
                     <span key={idx} style={{ fontSize: '8.5px', background: 'rgba(51,65,85,0.6)', padding: '2px 6px', borderRadius: '4px', color: '#E2E8F0' }}>
                       {t}
@@ -404,7 +500,7 @@ export default function App() {
               </div>
             ) : (
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                Click any node on the graph canvas to inspect balance, tags, and cluster intelligence.
+                Click any node on the graph canvas to inspect balance, tags, explorer links, and cluster intelligence.
               </p>
             )}
           </div>
@@ -425,9 +521,18 @@ export default function App() {
                       <span>Hop {e.hop || 1}: {fromNode?.label} ➔ {toNode?.label}</span>
                       <span style={{ color: '#F59E0B' }}>{e.amount}</span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="hop-ledger-hash">TX: {e.txHash}</span>
-                      <span style={{ fontSize: '9px', color: '#64748B' }}>{e.time}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                      <span className="hop-ledger-hash">TX: {e.txHash.slice(0, 14)}...</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button
+                          onClick={() => handleCopy(e.txHash, `tx-${idx}`)}
+                          className="btn-copy"
+                          title="Copy TX Hash"
+                        >
+                          {copiedKey === `tx-${idx}` ? '✓' : '📋'}
+                        </button>
+                        <span style={{ fontSize: '9px', color: '#64748B' }}>{e.time}</span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -442,7 +547,10 @@ export default function App() {
         <div className="modal-overlay open">
           <div className="modal-container">
             <div className="modal-header">
-              <h3>📜 Formal Legal Freeze Directive · SAHYOG</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <VaspLogo size={24} />
+                <h3>📜 Formal Legal Freeze Directive · SAHYOG / Section 94 BNSS</h3>
+              </div>
               <button onClick={() => setIsNoticeModalOpen(false)} className="btn-icon" style={{ fontSize: '18px' }}>✖</button>
             </div>
             <div className="modal-body">
