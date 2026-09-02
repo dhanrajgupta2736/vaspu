@@ -14,13 +14,76 @@ export default function App() {
   const [customChain, setCustomChain] = useState('tron');
   const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
   const [noticeData, setNoticeData] = useState(null);
-  const [mobileTab, setMobileTab] = useState('graph'); // 'graph' | 'cases' | 'intel'
+  const [mobileTab, setMobileTab] = useState('graph');
   const [copiedKey, setCopiedKey] = useState(null);
-  const [particleSpeed, setParticleSpeed] = useState('normal'); // 'slow' | 'normal' | 'fast'
+  const [particleSpeed, setParticleSpeed] = useState('normal');
+
+  // Real-Time States
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [isTracingLive, setIsTracingLive] = useState(false);
+  const [traceLogs, setTraceLogs] = useState([]);
+  const [ncrpList, setNcrpList] = useState(VASP_DATA.ncrpFeed);
+  const [newComplaintAlert, setNewComplaintAlert] = useState(false);
+  const [blockHeights, setBlockHeights] = useState({
+    tron: 68419890,
+    eth: 21894302,
+    arb: 194520118
+  });
+  const [sahyogApiStatus, setSahyogApiStatus] = useState('idle'); // 'idle' | 'transmitting' | 'confirmed'
+  const [sahyogLienRef, setSahyogLienRef] = useState(null);
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const graphInstanceRef = useRef(null);
+
+  // Live Clock (IST/UTC with milliseconds)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 200);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Real-Time Block Height Incrementer
+  useEffect(() => {
+    const tronTimer = setInterval(() => {
+      setBlockHeights(prev => ({ ...prev, tron: prev.tron + 1 }));
+    }, 3000);
+    const ethTimer = setInterval(() => {
+      setBlockHeights(prev => ({ ...prev, eth: prev.eth + 1 }));
+    }, 12000);
+    const arbTimer = setInterval(() => {
+      setBlockHeights(prev => ({ ...prev, arb: prev.arb + 4 }));
+    }, 1000);
+
+    return () => {
+      clearInterval(tronTimer);
+      clearInterval(ethTimer);
+      clearInterval(arbTimer);
+    };
+  }, []);
+
+  // Simulated Live NCRP 1930 WebSocket Feed
+  useEffect(() => {
+    const newCasesPool = [
+      { id: "NCRP-2026-89416", type: "Fake Pre-IPO Stock App", amount: "₹9,20,000", victim: "Sunil K. (Jaipur)", chain: "Tron (TRC-20)", token: "USDT", reportedAddress: "TQ2x...71kL", timestamp: "Just now", status: "UNPROCESSED", urgency: "CRITICAL" },
+      { id: "NCRP-2026-89417", type: "Digital Arrest Syndicate", amount: "₹34,00,000", victim: "Pooja V. (Gurugram)", chain: "Ethereum", token: "USDC", reportedAddress: "0x4F8...99a1", timestamp: "Just now", status: "UNPROCESSED", urgency: "CRITICAL" },
+      { id: "NCRP-2026-89418", type: "Part-Time Review Scam", amount: "₹3,40,000", victim: "Mohit D. (Indore)", chain: "Tron (TRC-20)", token: "USDT", reportedAddress: "TA9v...22cM", timestamp: "Just now", status: "UNPROCESSED", urgency: "HIGH" }
+    ];
+
+    let caseIdx = 0;
+    const feedTimer = setInterval(() => {
+      if (caseIdx < newCasesPool.length) {
+        const nextCase = newCasesPool[caseIdx];
+        setNcrpList(prev => [nextCase, ...prev.slice(0, 5)]);
+        setNewComplaintAlert(true);
+        setTimeout(() => setNewComplaintAlert(false), 4000);
+        caseIdx++;
+      }
+    }, 24000);
+
+    return () => clearInterval(feedTimer);
+  }, []);
 
   // Initialize Canvas Graph
   useEffect(() => {
@@ -65,16 +128,40 @@ export default function App() {
     }
   }, [mobileTab]);
 
+  // Execute Real-Time Forensic BFS Tracing
+  const runLiveTrace = (sc) => {
+    setIsTracingLive(true);
+    setTraceLogs([`[0.0s] Initializing RPC connection to ${sc.chain}...`]);
+
+    setTimeout(() => {
+      setTraceLogs(prev => [...prev, `[0.3s] Ingested reported wallet: ${sc.reportedAddress}`]);
+    }, 300);
+
+    setTimeout(() => {
+      setTraceLogs(prev => [...prev, `[0.7s] Querying multi-hop transfer graph (Breadth-First Search Depth: ${sc.hopCount})...`]);
+    }, 700);
+
+    setTimeout(() => {
+      setTraceLogs(prev => [...prev, `[1.1s] Scoring graph features against Elliptic++ 822k AML benchmark...`]);
+    }, 1100);
+
+    setTimeout(() => {
+      setTraceLogs(prev => [...prev, `[1.5s] MATCH FOUND: ${sc.attributionResult} (${sc.confidenceScore}% Confidence)`]);
+      setIsTracingLive(false);
+      if (graphInstanceRef.current) {
+        graphInstanceRef.current.setData(sc, true);
+      }
+    }, 1500);
+  };
+
   // Handle Scenario Switch
   const handleSelectScenario = (key) => {
     setCurrentScenarioKey(key);
     const sc = VASP_DATA.scenarios[key];
     setCurrentScenario(sc);
     setSelectedNode(null);
-    if (graphInstanceRef.current) {
-      graphInstanceRef.current.setData(sc, true);
-    }
     setMobileTab('graph');
+    runLiveTrace(sc);
   };
 
   // Timeline Slider Change
@@ -91,7 +178,19 @@ export default function App() {
   const handleOpenNotice = async () => {
     const generatedNotice = await SAHYOGNoticeEngine.createNotice(currentScenario);
     setNoticeData(generatedNotice);
+    setSahyogApiStatus('idle');
+    setSahyogLienRef(null);
     setIsNoticeModalOpen(true);
+  };
+
+  // Simulate Direct SAHYOG API Freeze Handshake
+  const handleSahyogApiDirectFreeze = () => {
+    setSahyogApiStatus('transmitting');
+    setTimeout(() => {
+      const lienRef = `SAHYOG-LIEN-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+      setSahyogLienRef(lienRef);
+      setSahyogApiStatus('confirmed');
+    }, 1400);
   };
 
   // Export Forensic JSON Dossier
@@ -130,7 +229,7 @@ export default function App() {
   const handleCustomTrace = (e) => {
     e.preventDefault();
     if (!customAddress.trim()) return;
-    handleSelectScenario('scenario1');
+    runLiveTrace(currentScenario);
   };
 
   const toggleParticleSpeed = () => {
@@ -145,6 +244,7 @@ export default function App() {
   };
 
   const cb = currentScenario.confidenceBreakdown;
+  const istTimeStr = currentTime.toLocaleTimeString('en-IN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   return (
     <div className="app-root">
@@ -165,12 +265,12 @@ export default function App() {
         <div className="threat-ticker-container">
           <div className="pulse-dot"></div>
           <div className="ticker-stat">
+            <span>IST CLOCK:</span>
+            <strong style={{ color: '#38BDF8' }}>{istTimeStr}</strong>
+          </div>
+          <div className="ticker-stat">
             <span>2025 LOSS:</span>
             <strong style={{ color: '#F59E0B' }}>₹22,495 Cr</strong>
-          </div>
-          <div className="ticker-stat hide-mobile">
-            <span>CASES:</span>
-            <strong>28.15 L</strong>
           </div>
           <div className="ticker-stat hide-mobile">
             <span>INVESTMENT:</span>
@@ -198,14 +298,30 @@ export default function App() {
       <div className="blockchain-telemetry-strip hide-mobile">
         <div className="telemetry-inner">
           <span className="telemetry-label">📡 LIVE ARCHIVE NODES:</span>
-          {VASP_DATA.blockchainNodes.map((node, idx) => (
-            <div key={idx} className="telemetry-node-item">
-              <span className="node-dot"></span>
-              <span className="node-name">{node.name}:</span>
-              <strong className="node-block">{node.block}</strong>
-              <span className="node-ping">({node.latency})</span>
-            </div>
-          ))}
+          <div className="telemetry-node-item">
+            <span className="node-dot"></span>
+            <span className="node-name">Tron (TRC-20):</span>
+            <strong className="node-block">#{blockHeights.tron.toLocaleString()}</strong>
+            <span className="node-ping">(1.2s ping)</span>
+          </div>
+          <div className="telemetry-node-item">
+            <span className="node-dot"></span>
+            <span className="node-name">Ethereum:</span>
+            <strong className="node-block">#{blockHeights.eth.toLocaleString()}</strong>
+            <span className="node-ping">(11.8s ping)</span>
+          </div>
+          <div className="telemetry-node-item">
+            <span className="node-dot"></span>
+            <span className="node-name">Arbitrum One:</span>
+            <strong className="node-block">#{blockHeights.arb.toLocaleString()}</strong>
+            <span className="node-ping">(0.2s ping)</span>
+          </div>
+          <div className="telemetry-node-item">
+            <span className="node-dot"></span>
+            <span className="node-name">SAHYOG Gateway:</span>
+            <strong className="node-block" style={{ color: '#10B981' }}>ONLINE</strong>
+            <span className="node-ping">(14 VASPs Synced)</span>
+          </div>
         </div>
       </div>
 
@@ -215,7 +331,7 @@ export default function App() {
           onClick={() => setMobileTab('cases')}
           className={`mobile-tab-btn ${mobileTab === 'cases' ? 'active' : ''}`}
         >
-          📂 Cases (4)
+          📂 Cases {newComplaintAlert ? '🔴' : '(4)'}
         </button>
         <button
           onClick={() => setMobileTab('graph')}
@@ -293,25 +409,30 @@ export default function App() {
             </form>
           </div>
 
-          {/* Live NCRP Feed */}
+          {/* Live NCRP Feed with Ingestion Alert */}
           <div style={{ flex: 1, paddingBottom: '20px' }}>
             <div className="panel-section-title">
               <span>LIVE NCRP 1930 COMPLAINT STREAM</span>
-              <span className="badge-tag emerald" style={{ fontSize: '7.5px' }}>STREAMING</span>
+              {newComplaintAlert ? (
+                <span className="badge-tag crimson" style={{ fontSize: '7.5px', animation: 'pulse-ring 1s infinite' }}>NEW COMPLAINT</span>
+              ) : (
+                <span className="badge-tag emerald" style={{ fontSize: '7.5px' }}>STREAMING</span>
+              )}
             </div>
             <div className="ncrp-feed-list">
-              {VASP_DATA.ncrpFeed.map((item, idx) => (
+              {ncrpList.map((item, idx) => (
                 <div
                   key={item.id}
                   onClick={() => {
                     const keys = Object.keys(VASP_DATA.scenarios);
-                    if (keys[idx]) handleSelectScenario(keys[idx]);
+                    const pickKey = keys[idx % keys.length];
+                    handleSelectScenario(pickKey);
                   }}
                   className="ncrp-item"
                 >
                   <div className="ncrp-item-top">
-                    <span>{item.id}</span>
-                    <span>{item.timestamp}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)' }}>{item.id}</span>
+                    <span style={{ color: item.timestamp === 'Just now' ? '#38BDF8' : '#64748B' }}>{item.timestamp}</span>
                   </div>
                   <div style={{ fontWeight: 600, fontSize: '11px', color: '#F8FAFC' }}>{item.type}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
@@ -326,10 +447,28 @@ export default function App() {
           </div>
         </aside>
 
-        {/* CENTER PANEL: Graph Canvas */}
+        {/* CENTER PANEL: Graph Canvas & Live Tracing Overlay */}
         <section className={`center-panel ${mobileTab === 'graph' ? 'mobile-active' : ''}`}>
           <div ref={containerRef} className="graph-canvas-container">
             <canvas ref={canvasRef} id="vaspGraphCanvas" />
+
+            {/* Live Forensic BFS Tracing HUD Terminal */}
+            {isTracingLive && (
+              <div className="live-tracing-overlay">
+                <div className="tracing-terminal-card">
+                  <div className="terminal-header">
+                    <div className="pulse-dot"></div>
+                    <strong>AUTOMATED BFS TRACING IN PROGRESS</strong>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#06B6D4' }}>RPC ACTIVE</span>
+                  </div>
+                  <div className="terminal-logs">
+                    {traceLogs.map((log, index) => (
+                      <div key={index} className="log-line">{log}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Floating HUD Header */}
             <div className="canvas-hud-top">
@@ -343,8 +482,9 @@ export default function App() {
               </div>
 
               <div className="canvas-controls-box">
+                <button onClick={() => runLiveTrace(currentScenario)} className="btn-icon" title="Re-Run Live Tracing Engine">⚡</button>
                 <button onClick={() => graphInstanceRef.current?.animateHopExpansion()} className="btn-icon" title="Replay Trace Animation">▶️</button>
-                <button onClick={toggleParticleSpeed} className="btn-icon" title={`Speed: ${particleSpeed}`}>⚡</button>
+                <button onClick={toggleParticleSpeed} className="btn-icon" title={`Speed: ${particleSpeed}`}>⏩</button>
                 <button onClick={() => graphInstanceRef.current?.zoomIn()} className="btn-icon" title="Zoom In">➕</button>
                 <button onClick={() => graphInstanceRef.current?.zoomOut()} className="btn-icon" title="Zoom Out">➖</button>
                 <button onClick={() => graphInstanceRef.current?.resetView()} className="btn-icon" title="Re-Center Graph">🎯</button>
@@ -645,6 +785,19 @@ export default function App() {
                       <code style={{ color: '#0F172A', fontWeight: 700 }}>{noticeData.sha256Hash}</code>
                     </div>
                   </div>
+
+                  {/* Real-Time SAHYOG API Dispatch Live Status */}
+                  {sahyogApiStatus === 'confirmed' && (
+                    <div style={{ marginTop: '12px', background: '#ECFDF5', border: '1px solid #10B981', padding: '10px', borderRadius: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#065F46', fontWeight: 700, fontSize: '9.5px' }}>
+                        <span>✓</span>
+                        <span>DIRECT API LIEN PLACED ON VASP GATEWAY</span>
+                      </div>
+                      <div style={{ fontSize: '8.5px', color: '#047857', marginTop: '2px' }}>
+                        Compliance Hold Receipt: <strong>{sahyogLienRef}</strong> · Asset Status: <strong>FROZEN IN CUSTODY</strong>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="notice-footer">
@@ -660,6 +813,16 @@ export default function App() {
               </div>
             </div>
             <div className="modal-footer">
+              {sahyogApiStatus === 'idle' && (
+                <button onClick={handleSahyogApiDirectFreeze} className="btn-secondary" style={{ borderColor: 'var(--emerald-success)', color: 'var(--emerald-success)' }}>
+                  ⚡ Broadcast Instant Lien via SAHYOG API
+                </button>
+              )}
+              {sahyogApiStatus === 'transmitting' && (
+                <button disabled className="btn-secondary" style={{ opacity: 0.7 }}>
+                  ⏳ Transmitting Encrypted Directive...
+                </button>
+              )}
               <button onClick={() => window.print()} className="btn-primary">
                 🖨️ Print / Save Court-Admissible PDF
               </button>

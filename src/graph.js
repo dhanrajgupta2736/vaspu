@@ -1,6 +1,6 @@
 /**
  * VASPTrace - Hardware-Accelerated Interactive Animated Graph Visualizer
- * Canvas-based multi-hop blockchain pathfinder with particle flow animation & touch support
+ * Canvas-based multi-hop blockchain pathfinder with particle flow animation, radar pulse, & touch support
  */
 
 export class VASPTraceGraph {
@@ -25,10 +25,12 @@ export class VASPTraceGraph {
     this.lastMousePos = { x: 0, y: 0 };
     this.initialPinchDist = null;
 
-    // Animation state
+    // Animation & Real-Time Radar State
     this.animationProgress = 1.0;
     this.maxHopsToDisplay = 99;
     this.animFrameId = null;
+    this.radarAngle = 0;
+    this.radarPulseRadius = 0;
 
     this.initEvents();
     this.resize();
@@ -274,6 +276,8 @@ export class VASPTraceGraph {
   startLoop() {
     const loop = () => {
       this.updateParticles();
+      this.radarAngle += 0.02;
+      this.radarPulseRadius = (this.radarPulseRadius + 0.5) % 45;
       this.draw();
       this.animFrameId = requestAnimationFrame(loop);
     };
@@ -465,6 +469,15 @@ export class VASPTraceGraph {
     }
 
     ctx.save();
+
+    // Radar Pulse on Target VASP or Selected Node
+    if (node.type === 'vasp' || isSelected) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, radius + this.radarPulseRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = node.type === 'vasp' ? `rgba(16, 185, 129, ${1 - this.radarPulseRadius / 45})` : `rgba(6, 182, 212, ${1 - this.radarPulseRadius / 45})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
 
     if (isSelected || isHovered || node.type === 'vasp') {
       ctx.beginPath();
