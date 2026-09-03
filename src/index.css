@@ -1382,14 +1382,47 @@ body {
   justify-content: center;
   overflow: hidden;
   font-family: var(--font-sans);
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease, background 0.6s ease;
+}
+
+.animated-intro-overlay.transition-docking {
+  background: rgba(4, 8, 20, 0.35);
+  backdrop-filter: blur(3px);
 }
 
 .animated-intro-overlay.fade-exit {
   opacity: 0;
-  transform: scale(1.04);
-  filter: blur(8px);
+  transform: scale(1.02);
+  filter: blur(6px);
   pointer-events: none;
+}
+
+/* Hide other intro elements during logo flight */
+.elements-hidden {
+  opacity: 0 !important;
+  transform: translateY(8px);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  pointer-events: none !important;
+}
+
+/* Flying Emblem Styles */
+.intro-flying-emblem {
+  position: relative;
+  z-index: 9999;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  will-change: transform;
+  filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.7));
+  transition: filter 0.4s ease;
+}
+
+.intro-flying-emblem.flip-active {
+  filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.95)) drop-shadow(0 0 10px #FFFFFF);
 }
 
 /* Cyber Grid & Ambient Blooms */

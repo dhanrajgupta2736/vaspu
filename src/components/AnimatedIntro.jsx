@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { VaspLogo } from './VaspLogo';
 import { ShieldCheck, Cpu, Terminal, ArrowRight } from 'lucide-react';
 
@@ -14,7 +14,13 @@ const BOOT_STAGES = [
 export function AnimatedIntro({ onComplete }) {
   const [progress, setProgress] = useState(0);
   const [activeStage, setActiveStage] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [flightCoords, setFlightCoords] = useState({ x: 0, y: 0, scale: 1 });
+
+  const logoRef = useRef(null);
+  const finishTriggeredRef = useRef(false);
 
   useEffect(() => {
     // Smooth progress counter from 0 to 100% over ~3 seconds
@@ -43,7 +49,7 @@ export function AnimatedIntro({ onComplete }) {
     // Auto complete after 3.3 seconds
     const finishTimer = setTimeout(() => {
       handleFinish();
-    }, 3400);
+    }, 3350);
 
     return () => {
       clearInterval(progressTimer);
@@ -53,23 +59,81 @@ export function AnimatedIntro({ onComplete }) {
   }, []);
 
   const handleFinish = () => {
-    setIsFadingOut(true);
+    if (finishTriggeredRef.current) return;
+    finishTriggeredRef.current = true;
+
+    // Calculate exact flight coordinates from center logo to header brand-icon-wrapper
+    const targetEl = document.querySelector('.brand-icon-wrapper');
+    if (targetEl && logoRef.current) {
+      const targetRect = targetEl.getBoundingClientRect();
+      const currentRect = logoRef.current.getBoundingClientRect();
+
+      const currentCenterX = currentRect.left + currentRect.width / 2;
+      const currentCenterY = currentRect.top + currentRect.height / 2;
+      const targetCenterX = targetRect.left + targetRect.width / 2;
+      const targetCenterY = targetRect.top + targetRect.height / 2;
+
+      const deltaX = targetCenterX - currentCenterX;
+      const deltaY = targetCenterY - currentCenterY;
+      const scale = targetRect.width / currentRect.width; // 36px / 90px = 0.4
+
+      setFlightCoords({ x: deltaX, y: deltaY, scale });
+    } else {
+      // High-precision fallback for desktop top-left coordinate
+      setFlightCoords({ x: -window.innerWidth / 2 + 42, y: -window.innerHeight / 2 + 32, scale: 0.4 });
+    }
+
+    // Phase 1: Begin flight and shrink
+    setIsTransitioning(true);
+
+    // Phase 2: Once docked at destination, trigger 3D Left-to-Right Flip animation
+    setTimeout(() => {
+      setIsFlipping(true);
+    }, 620);
+
+    // Phase 3: Final dissolution and handoff to live dashboard
+    setTimeout(() => {
+      setIsFadingOut(true);
+    }, 1150);
+
     setTimeout(() => {
       if (onComplete) onComplete();
-    }, 550);
+    }, 1300);
+  };
+
+  // Compute dynamic transform style for the flying logo
+  const getFlyingLogoStyle = () => {
+    if (!isTransitioning) {
+      return {
+        transform: 'translate(0px, 0px) scale(1) rotateY(0deg)',
+        transition: 'transform 0.65s cubic-bezier(0.2, 0.9, 0.3, 1.05)'
+      };
+    }
+
+    if (isFlipping) {
+      return {
+        transform: `translate(${flightCoords.x}px, ${flightCoords.y}px) scale(${flightCoords.scale}) rotateY(360deg)`,
+        transition: 'transform 0.5s ease-in-out'
+      };
+    }
+
+    return {
+      transform: `translate(${flightCoords.x}px, ${flightCoords.y}px) scale(${flightCoords.scale}) rotateY(0deg)`,
+      transition: 'transform 0.62s cubic-bezier(0.2, 0.9, 0.3, 1.05)'
+    };
   };
 
   return (
-    <div className={`animated-intro-overlay ${isFadingOut ? 'fade-exit' : ''}`}>
+    <div className={`animated-intro-overlay ${isTransitioning ? 'transition-docking' : ''} ${isFadingOut ? 'fade-exit' : ''}`}>
       
       {/* Background Cyber Grid & Radiant Blooms */}
-      <div className="intro-grid-background"></div>
-      <div className="intro-glow-circle cyan"></div>
-      <div className="intro-glow-circle emerald"></div>
-      <div className="intro-scanner-line"></div>
+      <div className={`intro-grid-background ${isTransitioning ? 'elements-hidden' : ''}`}></div>
+      <div className={`intro-glow-circle cyan ${isTransitioning ? 'elements-hidden' : ''}`}></div>
+      <div className={`intro-glow-circle emerald ${isTransitioning ? 'elements-hidden' : ''}`}></div>
+      <div className={`intro-scanner-line ${isTransitioning ? 'elements-hidden' : ''}`}></div>
 
       {/* Top Controls: Skip Button & Classification Banner */}
-      <div className="intro-top-bar">
+      <div className={`intro-top-bar ${isTransitioning ? 'elements-hidden' : ''}`}>
         <div className="intro-top-badge">
           <span className="pulse-dot emerald"></span>
           <span>SOVEREIGN LAW ENFORCEMENT INTELLIGENCE CORE</span>
@@ -80,21 +144,26 @@ export function AnimatedIntro({ onComplete }) {
         </button>
       </div>
 
-      {/* Center Cinematic Emblem & Branding */}
+      {/* Center Cinematic Container */}
       <div className="intro-content-container">
         
-        {/* Animated Emblem with Rotating Radar Crosshairs */}
+        {/* Flying Emblem with Shrink, Drag & 3D Flip */}
         <div className="intro-emblem-wrapper">
-          <div className="radar-crosshair-ring ring-outer"></div>
-          <div className="radar-crosshair-ring ring-inner"></div>
-          <div className="emblem-pulse-bloom"></div>
-          <div className="intro-logo-glow">
+          <div className={`radar-crosshair-ring ring-outer ${isTransitioning ? 'elements-hidden' : ''}`}></div>
+          <div className={`radar-crosshair-ring ring-inner ${isTransitioning ? 'elements-hidden' : ''}`}></div>
+          <div className={`emblem-pulse-bloom ${isTransitioning ? 'elements-hidden' : ''}`}></div>
+          
+          <div 
+            ref={logoRef} 
+            className={`intro-flying-emblem ${isFlipping ? 'flip-active' : ''}`}
+            style={getFlyingLogoStyle()}
+          >
             <VaspLogo size={90} />
           </div>
         </div>
 
-        {/* Title & Tagline */}
-        <div className="intro-brand-title">
+        {/* Title & Tagline (Fades out when docking starts) */}
+        <div className={`intro-brand-title ${isTransitioning ? 'elements-hidden' : ''}`}>
           <h1>VASP<span>Trace</span></h1>
           <div className="intro-sih-tag">
             <span className="badge-pill sih">SMART INDIA HACKATHON 2026 · PS 26183</span>
@@ -106,7 +175,7 @@ export function AnimatedIntro({ onComplete }) {
         </div>
 
         {/* Segmented Cyber Progress Bar */}
-        <div className="intro-progress-section">
+        <div className={`intro-progress-section ${isTransitioning ? 'elements-hidden' : ''}`}>
           <div className="progress-metrics-row">
             <span className="progress-label">
               <Cpu size={12} color="#06B6D4" />
@@ -125,7 +194,7 @@ export function AnimatedIntro({ onComplete }) {
         </div>
 
         {/* Boot Sequence Telemetry Terminal */}
-        <div className="intro-terminal-box">
+        <div className={`intro-terminal-box ${isTransitioning ? 'elements-hidden' : ''}`}>
           <div className="terminal-top-strip">
             <div className="terminal-dots">
               <span></span><span></span><span></span>
@@ -148,7 +217,7 @@ export function AnimatedIntro({ onComplete }) {
         </div>
 
         {/* Footnote / Authority Notice */}
-        <div className="intro-footer-authority">
+        <div className={`intro-footer-authority ${isTransitioning ? 'elements-hidden' : ''}`}>
           <ShieldCheck size={14} color="#10B981" />
           <span>Section 94 BNSS &amp; Section 63 BSA Digital Evidence Compliance Engine · Ministry of Home Affairs</span>
         </div>
