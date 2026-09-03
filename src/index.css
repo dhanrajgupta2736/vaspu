@@ -1113,3 +1113,257 @@ body {
     font-size: 10.5px;
   }
 }
+
+/* ==========================================================================
+   VASPTrace v3.0 Polish Additions: Confidence Drop, Case Filters, Dossier
+   ========================================================================== */
+
+/* Dynamic Confidence Drop Alert Banner */
+.confidence-drop-banner {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.confidence-drop-banner.amber {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #FBBF24;
+}
+
+.confidence-drop-banner.crimson {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #F87171;
+}
+
+.confidence-drop-banner.emerald {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34D399;
+}
+
+.confidence-drop-banner strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+/* Case Queue Filter Bar */
+.case-filter-row {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.case-filter-row::-webkit-scrollbar {
+  display: none;
+}
+
+.case-filter-chip {
+  padding: 3px 8px;
+  font-size: 9.5px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94A3B8;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.case-filter-chip:hover {
+  color: #F8FAFC;
+  background: rgba(51, 65, 85, 0.8);
+}
+
+.case-filter-chip.active {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: #06B6D4;
+  color: #38BDF8;
+}
+
+/* Aging Indicator Badge */
+.aging-badge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.aging-badge.critical {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.aging-badge.urgent {
+  background: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.aging-badge.standard {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94A3B8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+/* Report Modal Tabs */
+.report-tabs-header {
+  display: flex;
+  background: #090F1E;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.report-tab-btn {
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94A3B8;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.report-tab-btn:hover {
+  color: #E2E8F0;
+}
+
+.report-tab-btn.active {
+  color: #38BDF8;
+  border-bottom-color: #38BDF8;
+}
+
+/* Investigation Dossier Sheet */
+.investigation-dossier-sheet {
+  background: #FFFFFF;
+  color: #0F172A;
+  padding: 24px;
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.dossier-header-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #0F172A;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.dossier-title-group h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.dossier-title-group h4 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1E3A8A;
+  margin: 2px 0 0 0;
+}
+
+.dossier-title-group p {
+  font-size: 9.5px;
+  color: #64748B;
+  margin: 2px 0 0 0;
+}
+
+.dossier-meta-card {
+  text-align: right;
+  font-size: 9.5px;
+  color: #334155;
+}
+
+.dossier-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dossier-card-box {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 10px;
+}
+
+.dossier-card-box h5 {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 6px 0;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 4px;
+}
+
+.dossier-findings-callout {
+  background: #EFF6FF;
+  border-left: 3px solid #3B82F6;
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 16px;
+  font-size: 10.5px;
+  color: #1E3A8A;
+  line-height: 1.45;
+}
+
+.dossier-hop-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5px;
+  margin-bottom: 16px;
+}
+
+.dossier-hop-table th {
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 700;
+}
+
+.dossier-hop-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #E2E8F0;
+  color: #334155;
+}
+
+.dossier-hop-table tr:nth-child(even) {
+  background: #F8FAFC;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
