@@ -50,7 +50,7 @@ export function ExchangeLogo({ name = 'Binance', size = 22, className = '' }) {
   if (normName.includes('dcx') || normName.includes('coindcx')) {
     return (
       <svg 
-        width={size} 
+        width={Math.round(size * 2.2)} 
         height={size} 
         viewBox="0 0 120 40" 
         fill="none" 
@@ -69,7 +69,26 @@ export function ExchangeLogo({ name = 'Binance', size = 22, className = '' }) {
     );
   }
 
-  // 4. ZEBPAY / GENERIC VASP FALLBACK
+  // 4. ZEBPAY (Official Blue Z Glyph)
+  if (normName.includes('zebpay') || normName.includes('zeb')) {
+    return (
+      <svg 
+        width={size} 
+        height={size} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+        style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+        title="ZebPay Official VASP (FIU-IND Registered)"
+      >
+        <circle cx="12" cy="12" r="11" fill="#0066FF"/>
+        <path d="M7 8 H17 L10 16 H17" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    );
+  }
+
+  // 5. GENERIC VASP / EXCHANGE FALLBACK
   return (
     <svg 
       width={size} 
@@ -80,6 +99,7 @@ export function ExchangeLogo({ name = 'Binance', size = 22, className = '' }) {
       strokeWidth="2" 
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
     >
       <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
