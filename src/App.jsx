@@ -7,6 +7,8 @@ import { fetchLiveOnChainData } from './blockchain-api';
 import { SimulatedBadge } from './components/SimulatedBadge';
 import { ArchitectureInfoModal } from './components/ArchitectureInfoModal';
 import { AnimatedIntro } from './components/AnimatedIntro';
+import { ExchangeLogo } from './components/ExchangeLogos';
+import { SovereignSeal, WorkspaceWatermark } from './components/SovereignSeal';
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -771,6 +773,7 @@ export default function App() {
         <section className={`center-panel ${mobileTab === 'graph' ? 'mobile-active' : ''}`}>
           <div ref={containerRef} className="graph-canvas-container">
             <canvas ref={canvasRef} id="vaspGraphCanvas" />
+            <WorkspaceWatermark />
 
             {/* Live Forensic BFS Tracing HUD Terminal */}
             {isTracingLive && (
@@ -843,7 +846,10 @@ export default function App() {
               <div className="hero-label">IDENTIFIED DESTINATION VASP (EXCHANGE)</div>
               <SimulatedBadge text="Curated Scenario" />
             </div>
-            <div className="hero-target-name">{currentScenario.attributionResult}</div>
+            <div className="hero-target-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ExchangeLogo name={currentScenario.vaspName} size={24} />
+              <span>{currentScenario.attributionResult}</span>
+            </div>
             <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
               <strong>Attribution Latency:</strong> <span style={{ color: 'var(--text-primary)' }}>{currentScenario.attributionTime}</span>
             </div>
@@ -1065,20 +1071,27 @@ export default function App() {
               
               {/* TAB 1: POLICE INVESTIGATION DOSSIER */}
               {reportModalTab === 'dossier' && (
-                <div className="investigation-dossier-sheet">
-                  <div className="dossier-header-strip">
-                    <div className="dossier-title-group">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '20px' }}>🇮🇳</span>
-                        <h3>CENTRAL CYBER FINANCIAL CRIME REPORTING PLATFORM</h3>
+                <div className="police-dossier-sheet" style={{ position: 'relative' }}>
+                  <div className="dossier-court-stamp">CONFIDENTIAL · SEC 94 BNSS · COURT EVIDENCE</div>
+                  <div className="dossier-header-formal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div className="dossier-emblem-row">
+                        <div className="dossier-lion-emblem">🇮🇳</div>
+                        <div className="dossier-title-group">
+                          <h3>CENTRAL CYBER FINANCIAL CRIME REPORTING PLATFORM</h3>
+                          <p>MINISTRY OF HOME AFFAIRS · GOVERNMENT OF INDIA</p>
+                        </div>
                       </div>
                       <h4>INVESTIGATION &amp; ATTRIBUTION DOSSIER · CONFIDENTIAL</h4>
                       <p>Prepared for Law Enforcement Agencies &amp; Judicial Proceedings</p>
+                      <div className="dossier-meta-card" style={{ marginTop: '10px' }}>
+                        <div><strong>CASE REF:</strong> {currentScenario.id}</div>
+                        <div><strong>DATE:</strong> {noticeData.dateStr}</div>
+                        <div><strong>OFFENSE:</strong> {currentScenario.crimeType}</div>
+                      </div>
                     </div>
-                    <div className="dossier-meta-card">
-                      <div><strong>CASE REF:</strong> {currentScenario.id}</div>
-                      <div><strong>DATE:</strong> {noticeData.dateStr}</div>
-                      <div><strong>OFFENSE:</strong> {currentScenario.crimeType}</div>
+                    <div className="hide-mobile">
+                      <SovereignSeal size={95} certifiedHash={noticeData.sha256Hash} />
                     </div>
                   </div>
 
@@ -1130,7 +1143,14 @@ export default function App() {
                           <tr key={idx}>
                             <td><strong>{e.hop || idx + 1}</strong></td>
                             <td>{fromNode?.label || e.from}</td>
-                            <td>{toNode?.label || e.to}</td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                {idx === currentScenario.edges.length - 1 && (
+                                  <ExchangeLogo name={currentScenario.vaspName} size={16} />
+                                )}
+                                <span>{toNode?.label || e.to}</span>
+                              </div>
+                            </td>
                             <td><strong>{e.amount}</strong></td>
                             <td><code>{e.txHash.slice(0, 16)}...</code></td>
                             <td>{e.time}</td>
@@ -1197,7 +1217,12 @@ export default function App() {
                         </tr>
                         <tr>
                           <td><strong>Identified VASP Target:</strong></td>
-                          <td><strong style={{ color: '#059669' }}>{currentScenario.attributionResult}</strong></td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                              <ExchangeLogo name={currentScenario.vaspName} size={18} />
+                              <strong style={{ color: '#059669' }}>{currentScenario.attributionResult}</strong>
+                            </div>
+                          </td>
                         </tr>
                         <tr>
                           <td><strong>Tracing Latency:</strong></td>
@@ -1227,17 +1252,22 @@ export default function App() {
                       </ol>
                     </div>
 
-                    <div className="bsa-certificate-box">
-                      <div className="bsa-header">
-                        <span>🛡️ CERTIFICATE UNDER SECTION 63 OF BHARATIYA SAKSHYA ADHINIYAM (BSA, 2023)</span>
-                        <span style={{ fontSize: '9px' }}>ELECTRONIC EVIDENCE INTEGRITY</span>
+                    <div className="bsa-certificate-box" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <div className="bsa-header">
+                          <span>🛡️ CERTIFICATE UNDER SECTION 63 OF BHARATIYA SAKSHYA ADHINIYAM (BSA, 2023)</span>
+                          <span style={{ fontSize: '9px' }}>ELECTRONIC EVIDENCE INTEGRITY</span>
+                        </div>
+                        <p style={{ fontSize: '9px', color: '#64748B', margin: '4px 0' }}>
+                          I hereby certify that this electronic forensic dossier was generated automatically by the VASPTrace Sovereign Analytics Engine from immutable public blockchain ledger records. The cryptographic digest below guarantees zero post-generation alteration.
+                        </p>
+                        <div className="hash-display">
+                          <span style={{ color: '#475569', fontWeight: 600 }}>SHA-256 INTEGRITY HASH: </span>
+                          <code style={{ color: '#0F172A', fontWeight: 700 }}>{noticeData.sha256Hash}</code>
+                        </div>
                       </div>
-                      <p style={{ fontSize: '9px', color: '#64748B', margin: '4px 0' }}>
-                        I hereby certify that this electronic forensic dossier was generated automatically by the VASPTrace Sovereign Analytics Engine from immutable public blockchain ledger records. The cryptographic digest below guarantees zero post-generation alteration.
-                      </p>
-                      <div className="hash-display">
-                        <span style={{ color: '#475569', fontWeight: 600 }}>SHA-256 INTEGRITY HASH: </span>
-                        <code style={{ color: '#0F172A', fontWeight: 700 }}>{noticeData.sha256Hash}</code>
+                      <div className="hide-mobile">
+                        <SovereignSeal size={85} certifiedHash={noticeData.sha256Hash} />
                       </div>
                     </div>
 
