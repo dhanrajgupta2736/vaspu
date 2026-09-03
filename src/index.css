@@ -1367,3 +1367,432 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ==========================================================================
+   Designer Animated Intro Loading Page Styles
+   ========================================================================== */
+
+.animated-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #040814;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+}
+
+.animated-intro-overlay.fade-exit {
+  opacity: 0;
+  transform: scale(1.04);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Cyber Grid & Ambient Blooms */
+.intro-grid-background {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.intro-glow-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.intro-glow-circle.cyan {
+  width: 480px;
+  height: 480px;
+  top: 15%;
+  left: 20%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.45) 0%, transparent 70%);
+  animation: introPulse 4s ease-in-out infinite alternate;
+}
+
+.intro-glow-circle.emerald {
+  width: 420px;
+  height: 420px;
+  bottom: 15%;
+  right: 20%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%);
+  animation: introPulse 4s ease-in-out infinite alternate-reverse;
+}
+
+.intro-scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.8), rgba(16, 185, 129, 0.8), transparent);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.8);
+  animation: scanLaser 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Top Bar Controls */
+.intro-top-bar {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+  right: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.intro-top-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #94A3B8;
+  backdrop-filter: blur(8px);
+}
+
+.intro-skip-btn {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #38BDF8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.intro-skip-btn:hover {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: #06B6D4;
+  color: #FFFFFF;
+  transform: translateX(2px);
+}
+
+/* Center Content */
+.intro-content-container {
+  position: relative;
+  z-index: 10;
+  max-width: 680px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Emblem & Rotating Rings */
+.intro-emblem-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.radar-crosshair-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.radar-crosshair-ring.ring-outer {
+  width: 136px;
+  height: 136px;
+  border: 1px dashed rgba(6, 182, 212, 0.4);
+  animation: rotateRing 12s linear infinite;
+}
+
+.radar-crosshair-ring.ring-inner {
+  width: 112px;
+  height: 112px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  animation: rotateRingRev 8s linear infinite;
+}
+
+.emblem-pulse-bloom {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.4) 0%, transparent 70%);
+  animation: emblemPulse 2s ease-in-out infinite;
+}
+
+.intro-logo-glow {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.6));
+}
+
+/* Branding Typography */
+.intro-brand-title h1 {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #FFFFFF;
+  margin: 0;
+  line-height: 1.1;
+  text-shadow: 0 0 25px rgba(6, 182, 212, 0.5);
+}
+
+.intro-brand-title h1 span {
+  color: var(--cyan-primary);
+  background: linear-gradient(135deg, #38BDF8 0%, #06B6D4 50%, #10B981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.intro-sih-tag {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0 6px 0;
+  flex-wrap: wrap;
+}
+
+.badge-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+}
+
+.badge-pill.sih {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #38BDF8;
+}
+
+.badge-pill.team {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10B981;
+}
+
+.intro-subtitle {
+  font-size: 12px;
+  color: #94A3B8;
+  margin: 0 0 20px 0;
+  max-width: 520px;
+}
+
+/* Progress Bar */
+.intro-progress-section {
+  width: 100%;
+  max-width: 560px;
+  margin-bottom: 18px;
+}
+
+.progress-metrics-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94A3B8;
+}
+
+.progress-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #CBD5E1;
+  letter-spacing: 0.6px;
+}
+
+.progress-percentage {
+  font-family: var(--font-mono);
+  color: #38BDF8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.intro-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.intro-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284C7 0%, #06B6D4 60%, #10B981 100%);
+  border-radius: 4px;
+  transition: width 0.08s linear;
+  position: relative;
+}
+
+.progress-light-lead {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background: #FFFFFF;
+  box-shadow: 0 0 10px #FFFFFF, 0 0 20px #06B6D4;
+}
+
+/* Telemetry Logs Terminal */
+.intro-terminal-box {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(11, 20, 38, 0.85);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(12px);
+  text-align: left;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.terminal-top-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  margin-bottom: 8px;
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.terminal-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.4);
+}
+
+.terminal-dots span:nth-child(1) { background: #EF4444; }
+.terminal-dots span:nth-child(2) { background: #F59E0B; }
+.terminal-dots span:nth-child(3) { background: #10B981; }
+
+.terminal-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.5px;
+}
+
+.terminal-status {
+  font-size: 8.5px;
+  font-family: var(--font-mono);
+  color: #10B981;
+  font-weight: 700;
+}
+
+.terminal-logs-window {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 84px;
+  max-height: 84px;
+  overflow-y: hidden;
+}
+
+.intro-log-entry {
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.intro-log-entry .log-check {
+  color: #10B981;
+  font-weight: 800;
+}
+
+.intro-log-entry .log-text {
+  color: #E2E8F0;
+  font-weight: 500;
+}
+
+.intro-log-entry.active-typing .log-text {
+  color: #38BDF8;
+  font-weight: 700;
+}
+
+.intro-log-entry .log-detail {
+  color: #64748B;
+  font-size: 9px;
+  margin-left: auto;
+}
+
+/* Authority Footer */
+.intro-footer-authority {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #64748B;
+}
+
+@keyframes rotateRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotateRingRev {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes emblemPulse {
+  0% { transform: scale(0.9); opacity: 0.4; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+  100% { transform: scale(0.9); opacity: 0.4; }
+}
+
+@keyframes scanLaser {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes introPulse {
+  from { transform: scale(0.85); opacity: 0.25; }
+  to { transform: scale(1.15); opacity: 0.45; }
+}
+
+

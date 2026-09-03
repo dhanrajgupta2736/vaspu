@@ -6,8 +6,10 @@ import { VaspLogo } from './components/VaspLogo';
 import { fetchLiveOnChainData } from './blockchain-api';
 import { SimulatedBadge } from './components/SimulatedBadge';
 import { ArchitectureInfoModal } from './components/ArchitectureInfoModal';
+import { AnimatedIntro } from './components/AnimatedIntro';
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(true);
   const [currentScenarioKey, setCurrentScenarioKey] = useState('scenario1');
   const [currentScenario, setCurrentScenario] = useState(VASP_DATA.scenarios.scenario1);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -463,7 +465,12 @@ export default function App() {
       {/* ================= TOP COMMAND BAR ================= */}
       <header className="top-command-bar">
         <div className="brand-section">
-          <div className="brand-icon-wrapper">
+          <div 
+            className="brand-icon-wrapper" 
+            onClick={() => setShowIntro(true)} 
+            style={{ cursor: 'pointer' }}
+            title="Click to replay system initialization sequence"
+          >
             <VaspLogo size={36} />
           </div>
           <div className="brand-text">
@@ -501,6 +508,14 @@ export default function App() {
 
         {/* Action Buttons */}
         <div className="nav-actions">
+          <button 
+            onClick={() => setShowIntro(true)} 
+            className="btn-secondary hide-mobile" 
+            title="Replay System Boot &amp; Calibration Sequence"
+            style={{ borderColor: 'rgba(16, 185, 129, 0.4)', color: '#10B981' }}
+          >
+            🎬 Intro
+          </button>
           <button 
             onClick={() => setIsArchModalOpen(true)} 
             className="btn-secondary hide-mobile" 
@@ -1267,6 +1282,11 @@ export default function App() {
         isOpen={isArchModalOpen}
         onClose={() => setIsArchModalOpen(false)}
       />
+
+      {/* ================= DESIGNER ANIMATED INTRO SCREEN ================= */}
+      {showIntro && (
+        <AnimatedIntro onComplete={() => setShowIntro(false)} />
+      )}
 
     </div>
   );
