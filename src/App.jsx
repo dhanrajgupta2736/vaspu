@@ -376,8 +376,8 @@ export default function App() {
             <VaspLogo size={36} />
           </div>
           <div className="brand-text">
-            <h1>VASP<span>Trace</span> <small className="hide-mobile badge-sih">SIH 2026 PS26183</small></h1>
-            <p className="hide-mobile">Real-Time Crypto Fraud Attribution & Sovereign SAHYOG Legal Intelligence</p>
+            <h1>VASP<span>Trace</span> <small className="hide-mobile badge-sih">SIH 2026 PS26183</small> <small style={{ fontSize: '9.5px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#10B981', padding: '2px 6px', borderRadius: '4px', marginLeft: '4px', fontWeight: 'bold' }}>Team BlockSentinel</small></h1>
+            <p className="hide-mobile">Real-Time Crypto Fraud Attribution & Sovereign SAHYOG Legal Intelligence · Team BlockSentinel</p>
           </div>
         </div>
 
