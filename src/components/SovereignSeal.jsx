@@ -99,26 +99,12 @@ export function WorkspaceWatermark() {
   return (
     <div className="workspace-sovereign-watermark">
       <div className="watermark-crest">
-        {/* Ashoka Lion / Emblem Motif */}
-        <svg width="260" height="260" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="100" cy="100" r="92" stroke="#38BDF8" strokeWidth="1" strokeDasharray="4 4" opacity="0.3"/>
-          <circle cx="100" cy="100" r="76" stroke="#06B6D4" strokeWidth="1.2" opacity="0.4"/>
-          
-          {/* Ashoka Chakra in Center */}
-          <circle cx="100" cy="100" r="32" stroke="#38BDF8" strokeWidth="2" opacity="0.5"/>
-          <circle cx="100" cy="100" r="6" fill="#38BDF8" opacity="0.6"/>
-          {[...Array(24)].map((_, i) => {
-            const angle = (i * 15 * Math.PI) / 180;
-            const x1 = 100 + 6 * Math.cos(angle);
-            const y1 = 100 + 6 * Math.sin(angle);
-            const x2 = 100 + 31 * Math.cos(angle);
-            const y2 = 100 + 31 * Math.sin(angle);
-            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#38BDF8" strokeWidth="1.2" opacity="0.4"/>;
-          })}
-
-          {/* Sovereign Shield Shell */}
-          <path d="M100 16 L154 38 V92 C154 134 100 168 100 168 C100 168 46 134 46 92 V38 L100 16 Z" stroke="#06B6D4" strokeWidth="1.8" opacity="0.35"/>
-        </svg>
+        {/* Official State Emblem of India (Lion Capital of Ashoka) */}
+        <img 
+          src="/emblem_of_india_gold.svg" 
+          alt="State Emblem of India" 
+          className="watermark-emblem-img" 
+        />
       </div>
       <div className="watermark-text">
         <span>सत्यमेव जयते · GOVERNMENT OF INDIA</span>

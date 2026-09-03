@@ -2010,13 +2010,24 @@ body {
   text-align: center;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.08;
+  opacity: 0.14;
   user-select: none;
   transition: opacity 0.3s ease;
 }
 
 .watermark-crest {
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.watermark-emblem-img {
+  width: 140px;
+  height: auto;
+  filter: drop-shadow(0 0 16px rgba(6, 182, 212, 0.8)) brightness(1.2) contrast(1.1);
+  pointer-events: none;
+  user-select: none;
 }
 
 .watermark-text span {

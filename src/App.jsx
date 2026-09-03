@@ -1075,8 +1075,8 @@ export default function App() {
                   <div className="dossier-court-stamp">CONFIDENTIAL · SEC 94 BNSS · COURT EVIDENCE</div>
                   <div className="dossier-header-formal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
                     <div style={{ flex: 1 }}>
-                      <div className="dossier-emblem-row">
-                        <div className="dossier-lion-emblem">🇮🇳</div>
+                      <div className="dossier-emblem-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                        <img src="/emblem_of_india_doc.svg" alt="State Emblem of India" style={{ height: '44px', width: 'auto' }} />
                         <div className="dossier-title-group">
                           <h3>CENTRAL CYBER FINANCIAL CRIME REPORTING PLATFORM</h3>
                           <p>MINISTRY OF HOME AFFAIRS · GOVERNMENT OF INDIA</p>
@@ -1171,8 +1171,8 @@ export default function App() {
               {reportModalTab === 'notice' && (
                 <div className="sahyog-notice-sheet">
                   <div className="notice-header">
-                    <div className="emblem-container">
-                      <div className="gov-emblem">🇮🇳</div>
+                    <div className="emblem-container" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img src="/emblem_of_india_doc.svg" alt="State Emblem of India" style={{ height: '48px', width: 'auto' }} />
                       <div className="gov-title">
                         <h3>GOVERNMENT OF INDIA · MINISTRY OF HOME AFFAIRS</h3>
                         <h4>INDIAN CYBER CRIME COORDINATION CENTRE (I4C)</h4>
