@@ -24,6 +24,7 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState('graph');
   const [copiedKey, setCopiedKey] = useState(null);
   const [particleSpeed, setParticleSpeed] = useState('normal');
+  const [isSwitchingCase, setIsSwitchingCase] = useState(false);
 
   // Case Queue Filters & Sorting
   const [selectedTypologyFilter, setSelectedTypologyFilter] = useState('ALL');
@@ -165,14 +166,20 @@ export default function App() {
     }, 1500);
   };
 
-  // Handle Scenario Switch
+  // Handle Scenario Switch (With Logo Micro-Loader Transition)
   const handleSelectScenario = (key) => {
+    setIsSwitchingCase(true);
     setCurrentScenarioKey(key);
     const sc = VASP_DATA.scenarios[key];
     setCurrentScenario(sc);
     setSelectedNode(null);
     setMobileTab('graph');
-    runLiveTrace(sc);
+    
+    // Brief 650ms micro-loading transition showing only the animated flipping logo
+    setTimeout(() => {
+      setIsSwitchingCase(false);
+      runLiveTrace(sc);
+    }, 650);
   };
 
   // Timeline Slider Change
@@ -243,6 +250,11 @@ export default function App() {
     e.preventDefault();
     const addr = customAddress.trim();
     if (!addr) return;
+
+    setIsSwitchingCase(true);
+    setTimeout(() => {
+      setIsSwitchingCase(false);
+    }, 500);
 
     setIsTracingLive(true);
     setMobileTab('graph');
@@ -1282,6 +1294,23 @@ export default function App() {
         isOpen={isArchModalOpen}
         onClose={() => setIsArchModalOpen(false)}
       />
+
+      {/* ================= CASE SWITCH MICRO-LOADER (LOGO ONLY) ================= */}
+      {isSwitchingCase && (
+        <div className="case-switch-loader-overlay">
+          <div className="case-switch-logo-spinner">
+            <div className="micro-loader-radar-ring"></div>
+            <div className="micro-loader-pulse-core"></div>
+            <div className="micro-logo-wrap">
+              <VaspLogo size={76} />
+            </div>
+            <div className="micro-loader-status">
+              <span className="micro-loader-pulse-dot"></span>
+              <span>CALIBRATING GRAPH TOPOLOGY...</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================= DESIGNER ANIMATED INTRO SCREEN ================= */}
       {showIntro && (
